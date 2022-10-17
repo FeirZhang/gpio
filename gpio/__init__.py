@@ -19,6 +19,7 @@ GPIO_UNEXPORT = os.path.join(GPIO_ROOT, 'unexport')
 FMODE = 'w+'  # w+ overwrites and truncates existing files
 IN, OUT = 'in', 'out'
 LOW, HIGH = 0, 1
+GPIO_OFFSET = 1100
 
 
 class GPIOPin(object):
@@ -41,7 +42,7 @@ class GPIOPin(object):
             raise RuntimeError("pin {} is already configured".format(pin))
 
         self.value = None
-        self.pin = int(pin)
+        self.pin = int(pin) + GPIO_OFFSET
         self.root = os.path.join(GPIO_ROOT, 'gpio{0}'.format(self.pin))
 
         if not os.path.exists(self.root):
@@ -85,7 +86,7 @@ class GPIOPin(object):
         """
         try:
             # Implicitly convert str to int, ie: "1" -> 1
-            pin = int(pin)
+            pin = int(pin) + GPIO_OFFSET
         except (TypeError, ValueError):
             raise ValueError("pin must be an int")
 
