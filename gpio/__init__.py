@@ -16,7 +16,7 @@ _open_pins = {}
 GPIO_ROOT = '/sys/class/gpio'
 GPIO_EXPORT = os.path.join(GPIO_ROOT, 'export')
 GPIO_UNEXPORT = os.path.join(GPIO_ROOT, 'unexport')
-FMODE = 'w+'  # w+ overwrites and truncates existing files
+FMODE = 'w'  # w+ overwrites and truncates existing files
 IN, OUT = 'in', 'out'
 LOW, HIGH = 0, 1
 GPIO_OFFSET = 1100
@@ -42,13 +42,13 @@ class GPIOPin(object):
             raise RuntimeError("pin {} is already configured".format(pin))
 
         self.value = None
-        self.pin = int(pin) + GPIO_OFFSET
-        self.root = os.path.join(GPIO_ROOT, 'gpio{0}'.format(self.pin))
+        self.pin = int(pin)
+        self.root = os.path.join(GPIO_ROOT, 'gpio{0}'.format(self.pin + GPIO_OFFSET))
 
         if not os.path.exists(self.root):
             with _export_lock:
                 with open(GPIO_EXPORT, FMODE) as f:
-                    f.write(str(self.pin))
+                    f.write(str(self.pin  + GPIO_OFFSET))
                     f.flush()
 
         # Using unbuffered binary IO is ~ 3x faster than text
@@ -86,7 +86,7 @@ class GPIOPin(object):
         """
         try:
             # Implicitly convert str to int, ie: "1" -> 1
-            pin = int(pin) + GPIO_OFFSET
+            pin = int(pin)
         except (TypeError, ValueError):
             raise ValueError("pin must be an int")
 
@@ -170,7 +170,7 @@ class GPIOPin(object):
         if os.path.exists(self.root):
             with _export_lock:
                 with open(GPIO_UNEXPORT, FMODE) as f:
-                    f.write(str(self.pin))
+                    f.write(str(self.pin + GPIO_OFFSET))
                     f.flush()
 
         del _open_pins[self.pin]
